@@ -1,10 +1,6 @@
 # dsh 插件市场条目（awesome-dsh-plugin）
-#
-# 把这个文件重命名为 flying-ovaltine__residency-history-taking-internal-medicine.yml
-# 放进 awesome-dsh-plugin 仓库的 data/plugins/ 目录，然后开 PR。
-# 只用 description.en 也是合规的（中文可不写，维护者会补），这里两份都有。
-#
-# 把 flying-ovaltine 全部换成你的 GitHub 账号（小写，与仓库 URL 完全一致）。
+# 提交时重命名为 flying-ovaltine__residency-history-taking-internal-medicine.yml，
+# 放到 awesome-dsh-plugin 仓库的 data/plugins/ 目录。
 
 url: https://github.com/flying-ovaltine/residency-history-taking-internal-medicine
 name: flying-ovaltine/residency-history-taking-internal-medicine
@@ -18,6 +14,5 @@ description:
 # 市场卡片图标：GitHub 托管的位图（正方形 180px 最清楚）
 icon: https://raw.githubusercontent.com/flying-ovaltine/residency-history-taking-internal-medicine/main/assets/icon-180.png
 
-# 可选：预构建 tarball（GitHub Release 托管）。资产名不要带版本号，
-# 否则 latest/download/ 这条链接会在下一次发版后 404。
-# tarball: https://github.com/flying-ovaltine/residency-history-taking-internal-medicine/releases/latest/download/dsh-osce-history-internal-medicine.tgz
+# 预构建 tarball：资产名不带版本号，latest/download/ 不会随下次发版 404
+tarball: https://github.com/flying-ovaltine/residency-history-taking-internal-medicine/releases/latest/download/dsh-osce-history-internal-medicine.tgz
