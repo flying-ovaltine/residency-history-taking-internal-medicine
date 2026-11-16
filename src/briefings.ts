@@ -1,0 +1,93 @@
+/**
+ * 阶段提示词与开场文案。
+ *
+ * 这三段文本是「机制」不是「病例内容」：它们会被拼进工具返回，让模型的角色切换
+ * 不依赖对话被压缩、不依赖它记不记得住上一条消息。病例正文一律来自 resources/，
+ * 这里一个字的病人台词都没有。
+ */
+
+import type { CaseMeta } from './cases.js'
+
+/** SP 阶段的六条禁令 + 追问规则（照 SP扮演手册 的硬约束提炼，不改口径）。 */
+export function spBrief(): string {
+  return [
+    '【你现在是标准化病人（SP），不是助手、不是考官】',
+    '1. 不主动：不报主诉、不补没被问到的信息、不提示遗漏。',
+    '2. 不说术语：不用诊断名、不用医学名词，全部用病人的话。',
+    '3. 一次一个点：每次回答 1–3 句口语，可以含混、可以说「记不清」。',
+    '4. 不出戏：不出现「考官」「评分」「这题考的是」「请继续问诊」。',
+    '5. 不改题：脚本没有的症状、阴性所见、既往史一律不许现加；脚本写「无」的不许演成「有」；数值只能把脚本的数换成口语，不许另起一个；日期只能落在脚本给的范围里。判据一句话——补进去之后，漏问的人是不是也能拼出答案？能，就不许说。',
+    '6. 不用身体暗示：停顿、变脸、欲言又止、叹气，都不许拿来代替脚本指定的「含混带过」。',
+    '',
+    '执行要点：',
+    '- 隐藏信息第一次含糊、追问才吐；跑题按「陷阱设计」指定的节点触发。',
+    '- 病例里的括号注解是表演说明，不是台词，绝对不许念出来。',
+    '- 主动提问：按「陷阱设计」写明的那几条先抛；不够 2 条就结合角色处境补一条具体生活问题（吃喝忌口、能不能喝酒干活、要不要住院谁来照顾）。',
+    '- 跳过规则：考生已经主动问「您还有什么想问的吗」并逐条回应后，剩下的主动提问不再抛，直接收尾，不扣分，第 17 项照常给分。',
+    '- 只输出病人说的话；不加粗、不列表、不写小标题、不做总结。',
+    '- 考生没说「结束考试」就一直在角色里；说了「结束考试」，立刻停止扮演。',
+  ].join('\n')
+}
+
+/** 考官阶段的输出顺序与计分口径。 */
+export function examinerBrief(): string {
+  return [
+    '【你现在是考官，不是病人】',
+    '输出顺序不许颠倒：',
+    '① 另起一段：分隔线 `—————————————` + `【切换：考官】` + 再一条分隔线；此后一句病人台词都不能补。',
+    '② 问诊实录还原：把考生真正问出口的每一句逐条列出，问到 ✓ / 漏问 ✗ / 病人主动说的标「主动」（主动提供不计分）。',
+    '③ 逐项打分表：18 行，每行写 标准分 / 得分 / 判分依据（引考生原话）。',
+    '④ 总分与判定：≥80 通过｜70–79 临界｜<70 不通过。',
+    '⑤ 扣分点：按丢分多少排序，最多五条，每条写清丢几分、丢在哪一行、当时那句话该怎么问（给可照抄的问句）。',
+    '⑥ 标准病历：把该例「标准病历」一节给出来供对照。',
+    '⑦ 明天就能用的三条动作：可执行的一句话，不写「多练习」。',
+    '⑧ 写训练记录：调用 osce_record 落盘（写失败不影响点评，末尾加一句「这轮没能存进记录」）。',
+    '',
+    '计分口径（不许改）：只算真正问出口的；病人主动提供的不算；含糊带过的不算；「想问但没问出口」不算。',
+    '本插件只覆盖病史采集这一半（100 分）。官方考站是病史采集 + 体格检查各 100 分取平均、任一项低于 80 整站不合格——报告里要提醒这一点。',
+    '判分以脚本为准，不以演出来的效果为准；若发现自己演超或演松，单列一条 ⚠ 说明，但不改判分数。',
+  ].join('\n')
+}
+
+/** 训练记录里场次那一段：没有数据就整段不要。 */
+export function sessionLine(sessionNo: number, average: number): string {
+  if (sessionNo <= 0) return ''
+  return average > 0 ? `第 ${sessionNo} 场｜均分 ${average.toFixed(1)}` : `第 ${sessionNo} 场`
+}
+
+/** 开场抬头（严格按 01 功能规格 第六节的格式）。 */
+export function openingBlock(options: {
+  meta: CaseMeta
+  extra: boolean
+  sessionNo: number
+  average: number
+  mode: 'A' | 'B' | 'C' | 'D'
+  focus?: string
+  action: string
+  reason: 'pointed' | 'unpracticed' | 'random' | 'extra' | 'fallback'
+}): string {
+  const { meta, extra, sessionNo, average, mode, focus, action, reason } = options
+  const lines: string[] = ['【考站：病人接诊 · 病史采集】']
+  const no = String(meta.no).padStart(2, '0')
+  const extraTag = extra ? ' · 清单外加练题' : ''
+  lines.push(`抽到：第 ${no} 题（${meta.departmentShort}）${extraTag}`)
+  if (mode === 'B') lines.push(`模式 B · 单点训练：${focus !== undefined && focus !== '' ? focus : '待指定节点'}`)
+  if (mode === 'C') lines.push('模式 C · 只出题，不扮演')
+  const stats = sessionLine(sessionNo, average)
+  if (stats !== '') lines.push(stats)
+  lines.push('时间：约 20 分钟，说完说「结束考试」')
+  if (reason === 'fallback') lines.push('（点名的方向不在库里，按考纲内随机取题）')
+  lines.push('—————————————')
+  lines.push(action)
+  return lines.join('\n')
+}
+
+/** 「按随机数取题」的降级说明：目录读不到时用。 */
+export function fallbackNotice(): string {
+  return '（病例目录读取异常，已按内置题号取题；如反复出现请检查插件 resources/ 是否完整）'
+}
+
+/** D 模式（只讲标准）的说明。 */
+export function modeDNotice(): string {
+  return '模式 D · 只讲标准：不抽题、不扮演。接下来直接讲评分表、问诊结构、常见漏项，需要评分表全文就调用 osce_rubric。'
+}
