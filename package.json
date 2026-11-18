@@ -1,8 +1,16 @@
 {
   "name": "dsh-osce-history-internal-medicine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "description": "住培结业考「病人接诊·病史采集」（内科）陪练：模型先当 SP 病人，说「结束考试」就切考官按官方 100 分表逐项打分。32 例病例脚本、4 份手册、训练记录自动落盘。Residency OSCE history-taking trainer for internal medicine: standardized-patient role-play, then examiner scoring against the official 100-point rubric.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flying-ovaltine/residency-history-taking-internal-medicine.git"
+  },
+  "homepage": "https://github.com/flying-ovaltine/residency-history-taking-internal-medicine#readme",
+  "bugs": {
+    "url": "https://github.com/flying-ovaltine/residency-history-taking-internal-medicine/issues"
+  },
   "type": "module",
   "main": "lib/index.js",
   "exports": {
