@@ -142,11 +142,18 @@ node --test test/selfcheck.mjs
 
 MIT © 杨杨。病例、手册与人设素材随本插件一同分发，来源为同作者的住培结业考病史采集专家包。
 
-## 想上架到插件市场？
+## 已上架插件市场
 
-`marketplace/` 里已经备好了全部上架材料：`entry.yml`（awesome-dsh-plugin 的条目文件，改成你的 `<owner>` 即可）、`PR-body.md`（PR 描述）、`README.md`（建仓 → 发 Release → 提 PR 的完整命令）。
+本插件已被 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 目录收录（PR [#15907](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15907) 于 2026-11-17 合并）：
 
-市场列表来自 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 的 `data/plugins/<owner>__<repo>.yml`——一次 PR 只加这一个文件。前置条件是：仓库声明了 `dsh.bundle`（本插件已声明 ✅）、仓库创建满 1 天、加 `dsh-plugin` topic。包名 `dsh-osce-history-internal-medicine` 在 npm 上尚未被占用。
+- 市场页：https://awesome-dsh-plugin.com/p/flying-ovaltine/residency-history-taking-internal-medicine/
+- 一行安装（预构建包，免构建授权）：
 
-本机没有 `git`、`gh`、npm token，所以**实际的 push 与 PR 需要你自己的 GitHub 账号执行**；插件本身已经在本机装好可用。
+  ```sh
+  dsh plugin --profile web add "https://github.com/flying-ovaltine/residency-history-taking-internal-medicine/releases/latest/download/dsh-osce-history-internal-medicine.tgz"
+  ```
+
+也可以直接在 DSH 的 **插件 → 插件市场 → 发现** 里搜「病史采集」或 `OSCE`。
+
+`marketplace/` 里保留了当初的投稿材料（`entry.yml`、`PR-body.md`、上架步骤），以后要改条目描述时按里面重走一遍即可——一次 PR 只加一个 `data/plugins/*.yml` 文件。
 
