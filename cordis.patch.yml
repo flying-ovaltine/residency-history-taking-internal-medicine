@@ -1,16 +1,16 @@
-# 住培结业考「病人接诊 · 病史采集」（内科）陪练插件。
+# 住培病史采集（内科）陪练插件
 #
 # 安装后同时得到：
-#   1. 技能 history-taking-exam：完整 SOP + 32 例病例脚本 + 4 份手册（原样随包分发）
-#   2. 工具 osce_start / osce_get_case / osce_rubric / osce_finish / osce_record
-#      —— 把「抽题 → 当 SP → 切考官 → 逐项打分 → 落盘训练记录」变成确定的机制
+#   1. 技能 history-taking-exam：完整 SOP + 32 例病例脚本 + 5 份手册（原样随包分发）
+#   2. 5 个工具：osce_start / osce_get_case / osce_rules / osce_finish / osce_stats
+#      —— 抽题、阶段隔离、按需取手册、收卷落记录，都不靠模型自觉
 #
-# 插件自带空配置，绝不弄崩启动。可选配置：
+# 可选配置（patch 是整行替换，没写的字段取默认值）：
 #
 #   - id: residency-history-taking-internal-medicine
 #     config:
-#       personaPrompt: true        # 考试进行中注入角色约束，默认 true
-#       skillName: history-taking-exam
+#       recordsFile: '~/.workbuddy/history-taking-records.md'   # 默认就是这个路径
+#       passLine: 80                                            # 合格线，默认 80
 #
 - insert:
     - id: residency-history-taking-internal-medicine

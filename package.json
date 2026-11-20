@@ -1,8 +1,8 @@
 {
   "name": "dsh-osce-history-internal-medicine",
-  "version": "1.0.1",
+  "version": "1.4.0",
   "private": false,
-  "description": "住培结业考「病人接诊·病史采集」（内科）陪练：模型先当 SP 病人，说「结束考试」就切考官按官方 100 分表逐项打分。32 例病例脚本、4 份手册、训练记录自动落盘。Residency OSCE history-taking trainer for internal medicine: standardized-patient role-play, then examiner scoring against the official 100-point rubric.",
+  "description": "住培结业考「病人接诊·病史采集」（内科）陪练：说「开始考试」就抽题当 SP 病人，说「结束考试」就切考官按官方 100 分表逐项打分。32 例病例、普通/实战双模式、5 个工具、训练记录自动落盘。Residency OSCE history-taking trainer for internal medicine with a concealment 'combat' mode.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/flying-ovaltine/residency-history-taking-internal-medicine.git"
@@ -12,29 +12,26 @@
     "url": "https://github.com/flying-ovaltine/residency-history-taking-internal-medicine/issues"
   },
   "type": "module",
-  "main": "lib/index.js",
+  "main": "index.js",
   "exports": {
-    ".": "./lib/index.js",
+    ".": "./index.js",
     "./locale/*.json": "./locale/*.json",
     "./icon": "./icon.png",
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
+    "index.js",
+    "cordis.patch.yml",
     "locale",
     "resources",
     "assets",
     "icon.png",
-    "cordis.patch.yml",
     "README.md",
     "README.en.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test test/selfcheck.mjs",
-    "pack": "pnpm pack"
+    "test": "node --test test/smoke.mjs"
   },
   "dsh": {
     "bundle": {
@@ -59,9 +56,5 @@
   "license": "MIT",
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.0",
-    "typescript": "^5.6.3"
   }
 }

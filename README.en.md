@@ -1,79 +1,64 @@
 # Residency OSCE History-Taking Trainer (Internal Medicine) · DSH plugin
 
-English | [中文](README.md)
+English | [中文](README.md) · **v1.4.0**
 
 Runs one complete station of China's residency graduation OSCE — **Patient Encounter · History Taking** — inside the chat:
 
-1. Say **"start exam"**: the plugin draws a case and the assistant immediately becomes the **standardized patient (SP)**. You are the candidate.
-2. Say **"end exam"**: the plugin closes the station, computes the elapsed time, replays everything you actually asked, and the assistant switches to **examiner** — scoring item by item against the official 100-point rubric (18 rows), listing deductions with ready-to-copy replacement questions, and finally showing that case's standard medical record.
-3. The score is appended to a training log; the next exam reads it first and prefers cases you have not practised.
+1. Say **"start exam"**: the plugin draws a case and the assistant immediately becomes the **standardized patient (SP)**.
+2. Say **"end exam"**: the plugin closes the station, computes the elapsed time, writes the score to the training log, and the assistant switches to **examiner** — scoring item by item against the official 100-point rubric (18 rows), listing deductions with ready-to-copy replacement questions, and showing that case's standard medical record.
 
 **The pass mark is 80, not 60.**
 
-> For exam practice and teaching simulation only. Not medical advice. Patients, cases and results are fictional teaching scripts, not leaked exam material.
+> For exam practice and teaching simulation only. Patients, cases and results are fictional teaching scripts, not leaked exam material.
 
-## What gets installed
+## New in v1.4.0 — the concealment "combat" mode
+
+Normal mode simulates the station; **combat mode** simulates a real clinic, where the patient hides things:
+
+- Opening is a bare greeting — no case number, no specialty, no chief complaint.
+- Only the latest episode is offered; earlier history is peeled back one layer at a time ("cough for 5 years, worse for 1 day" → first only "cough, started yesterday").
+- Chronic disease / medication / family / infectious history: first asked, minimized or denied; acknowledged only when pressed.
+- Lab sheets are produced only when asked for; anything absent from the case script is "not tested", never invented.
+- No timer, no prompting; the patient is in a hurry, not unfriendly.
+
+The log gains a **mode** column, so normal and combat scores are tracked separately. Older 8-column files get the header upgraded in place; existing rows are never rewritten.
+
+## What ships
 
 | Installed | Content |
 |---|---|
-| **Skill** `history-taking-exam` | Full SOP (trigger phrases, four modes, opening template, examiner output order) plus **32 case scripts** and 4 handbooks (rubric / SP playbook / examiner playbook / cheat sheet), shipped verbatim |
-| **5 tools** | `osce_start`, `osce_get_case`, `osce_rubric`, `osce_finish`, `osce_record` — the state machine, case drawing, stage isolation and score logging are mechanisms, not model good intentions |
-| **Examiner persona** | A short stage constraint is injected **only while an exam is running**; outside an exam it injects an empty string, so ordinary sessions are untouched |
+| **Skill** `history-taking-exam` | Full SOP — searchable in the skill catalog, callable via `/history-taking-exam` |
+| **5 tools** | `osce_start` / `osce_get_case` / `osce_rules` / `osce_finish` / `osce_stats` |
+| **Content** | 32 case scripts (29 in-scope + 3 hematology extras), the official 100-point rubric, 5 handbooks |
 
-### Install
-
-```sh
-# from the plugin marketplace: Plugins → Marketplace, search "OSCE history taking"
-# or link a local checkout:
-dsh plugin --profile web add link:/absolute/path/to/residency-history-taking-internal-medicine
-```
-
-Or merge the `insert` block of `cordis.patch.yml` into your profile's patch layer. The patch `name` must equal the package name or the row is silently skipped.
-
-## Usage
-
-| You say | What happens |
-|---|---|
-| start exam / 开始考试 / 出题 / 来一道 | Draw a case, load it, enter the SP role immediately — no confirmation, no "are you ready?" |
-| end exam / 结束考试 / 交卷 / 问完了 / 打分吧 | Stop acting, switch to examiner, produce the report. Not a single patient line afterwards |
-| keep asking questions | Stays in the exam; it will not close the station on its own |
-| "a hematology case" / "diabetes" | Draws inside that subset, preferring unpractised cases |
-| "an extra hematology case" / 清单外的 | Draws case-30–32 and marks the opening as an extra, out-of-syllabus case |
-
-Modes: **A** full simulation (default) · **B** single-skill drill · **C** case only, no role-play · **D** rubric walkthrough only.
+## Tools
 
 | Tool | Purpose |
 |---|---|
-| `osce_start` | Draw, load, stamp the start time, switch to SP; returns the opening block and the SP-visible part of the case |
-| `osce_get_case` | Reload a case; **during SP it strips the standard record and examiner notes** (requested `part` is downgraded to `sp`) |
-| `osce_rubric` | Official rubric slices: full / station rules / 18 rows / technique scale / common misses / high-score profile |
-| `osce_finish` | Close the station, compute elapsed time, replay the interview, return the standard record + examiner notes + full rubric, move to GRADING |
-| `osce_record` | Write score and verdict into the training log, return sessions/average/practised cases/chronic weak spots |
-
-Drawing rules are enforced in code: the random pool is **case-01 … case-29**; case-30–32 are out-of-syllabus hematology extras and never enter it unless explicitly requested.
-
-## Session history — no invented API
-
-`osce_finish` uses the official `ctx.sessions` service: `Session.snapshotEvents(offset captured at exam start)`, filtered to `user/message` and `assistant/message`. If that is unavailable, it falls back to the `questions` argument, where the model passes the reconstructed list. Both paths exist; history wins, and the tool result states which source was used.
+| `osce_start` | Draws a case, reads it, stamps the start time, returns the opening block plus the SP-visible script (never the standard record). `mode: 'combat'` selects combat mode |
+| `osce_get_case` | Reads a case; **requesting the post-exam part of the case being examined is refused** — a hard anti-spoiler rule |
+| `osce_rules` | On-demand handbooks: `persona` / `sp` / `combat` / `examiner` / `rubric` / `quick` / `skill` |
+| `osce_finish` | Closes the station, writes the log row, returns the standard record + full rubric + verdict rules |
+| `osce_stats` | Sessions, overall average, per-mode averages, practised case numbers, chronic weak spots (same item ≥3 times) |
 
 ## Training log
 
-`~/.workbuddy/history-taking-records.md` (append-only Markdown table). Falls back to `训练记录.md` in the session directory; if neither is writable it degrades silently — no error, no interruption, just one line in the report saying the round was not saved.
+Default `~/.workbuddy/history-taking-records.md` (override with `config.recordsFile`). Append-only, 9 columns with the last one carrying the mode. If the write fails, the report still renders and says the round was not saved.
 
-## Build
+## Install
 
 ```sh
-pnpm install
-pnpm build        # tsc -p tsconfig.json → lib/
-pnpm typecheck
-node --test test/selfcheck.mjs
+dsh plugin --profile web add "https://github.com/flying-ovaltine/residency-history-taking-internal-medicine/releases/latest/download/dsh-osce-history-internal-medicine.tgz"
 ```
 
-## Deliberate trade-offs
+## Deliberate host adaptations (three, no business-logic change)
 
-1. **Zero runtime dependencies, type-only imports.** This host packs `@deepseek-ai/cordis` and `@deepseek-ai/dsh-tools` inside the application bundle and does not install them into the profile's `node_modules` (verified on this machine), so a runtime `import` would fail to resolve and break host startup. The source uses `import type` only (erased at compile time) and registers tools with plain objects matching `ToolDefinition` — the same approach the installed `dsh-ppt` plugin takes.
-2. **Exam state is in-memory only.** A half-finished exam that survives a restart misleads more than it helps. Scores live on disk; the in-flight station does not.
+1. **No `@deepseek-ai/schemastery`, no `export const Config`** — this profile does not install `@deepseek-ai/*` into `node_modules`, so a runtime import fails with `ERR_MODULE_NOT_FOUND` (verified: install activates and immediately fails). Defaults live in `apply`, overridable through the patch `config`.
+2. **`defineTool` replaced by a local identity helper** — the host only validates the `ToolDefinition` shape.
+3. **The log path returns to `~/.workbuddy/history-taking-records.md`**, matching the spec and keeping existing history (old 8-column rows) readable.
+
+Plus one optional extra: `SKILL.md` is also registered as a DSH skill, so the catalog and `/history-taking-exam` work (silently skipped when the host has no `skills` service).
 
 ## License
 
-MIT © Yang Yang. Cases, handbooks and persona ship with this plugin from the same author's residency OSCE history-taking expert pack.
+MIT © Yang Yang
